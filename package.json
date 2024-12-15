@@ -1,0 +1,13 @@
+{
+  "name": "fullstack-intern-test-case",
+  "version": "1.0.0",
+  "description": "Intern test case",
+  "author": "Wooclap",
+  "license": "ISC",
+  "scripts": {
+    "start:api": "npm start --prefix apps/api",
+    "start:web": "npm start --prefix apps/web",
+    "seed": "npm run seed --prefix apps/api",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

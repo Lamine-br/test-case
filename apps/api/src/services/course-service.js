@@ -9,6 +9,14 @@ const getAll = () => {
 };
 
 /**
+ * Retrieve the courses that correspond to the search
+ * @returns {Promise<Array<Course>>} List of courses
+ */
+const search = (query) => {
+	return CourseModel.find(query).select("code title description");
+};
+
+/**
  * Retrieve a course by its ID
  * @param {String} courseId Course ID
  * @returns {Promise<Course>} Course
@@ -71,6 +79,7 @@ const remove = async (courseId) => {
 
 module.exports = {
 	getAll,
+	search,
 	getById,
 	getByCode,
 	create,

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // Import useParams from React Router
+import { useParams, useNavigate } from "react-router-dom";
 import { Course, Question } from "../../models/course.model";
 import {
 	fetchCourse,
 	fetchCourseQuestions,
+	updateQuestion,
 } from "../../api-services/courses.api-service";
-import { Card, Table, Button } from "antd";
+import { Card, Table, Button, Modal, Form, Input, Checkbox } from "antd";
 import * as S from "./CourseDetails.styles";
 import { ColumnsType } from "antd/es/table";
 
@@ -24,6 +25,9 @@ export const CourseDetails = () => {
 	const [course, setCourse] = useState<Course | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+	const [form] = Form.useForm();
 
 	useEffect(() => {
 		if (!courseCode) {
@@ -34,7 +38,6 @@ export const CourseDetails = () => {
 
 		const fetchData = async () => {
 			try {
-				// Fetch the course details
 				const courseData = await fetchCourse(courseCode);
 
 				if (!courseData) {
@@ -45,7 +48,6 @@ export const CourseDetails = () => {
 
 				let courseId = courseData._id;
 
-				// Fetch the questions related to the course
 				const questionsData = await fetchCourseQuestions(courseId);
 
 				if (!questionsData) {
@@ -54,7 +56,6 @@ export const CourseDetails = () => {
 					return;
 				}
 
-				// Combine course data with questions
 				setCourse({
 					...courseData,
 					questions: questionsData,
@@ -69,7 +70,62 @@ export const CourseDetails = () => {
 		};
 
 		fetchData();
-	}, [courseCode]); // Re-fetch when courseCode changes
+	}, [courseCode]);
+
+	useEffect(() => {
+		if (currentQuestion) {
+			form.setFieldsValue({
+				title: currentQuestion.title,
+				choices: currentQuestion.choices,
+			});
+		}
+	}, [currentQuestion, form]);
+
+	const handleEditQuestion = (question: Question) => {
+		setCurrentQuestion(question);
+		setIsModalVisible(true);
+	};
+
+	const handleModalClose = () => {
+		setIsModalVisible(false);
+		setCurrentQuestion(null);
+	};
+
+	const handleSaveQuestion = async (values: any) => {
+		if (currentQuestion && course?._id) {
+			const updatedQuestion = {
+				...currentQuestion,
+				title: values.title,
+				choices: values.choices.map((choice: any) => ({
+					...choice,
+					isCorrect: choice.isCorrect || false,
+				})),
+			};
+
+			try {
+				// Update the question in the database
+				await updateQuestion(course._id, currentQuestion._id, updatedQuestion);
+
+				setCourse((prevCourse) => {
+					if (prevCourse) {
+						return {
+							...prevCourse,
+							questions: prevCourse.questions.map((q) =>
+								q._id === currentQuestion._id ? updatedQuestion : q
+							),
+						};
+					}
+					return prevCourse;
+				});
+
+				handleModalClose();
+			} catch (err) {
+				console.error("Error updating question:", err);
+			}
+		} else {
+			console.error("Course ID is undefined.");
+		}
+	};
 
 	if (loading) return <p>Loading course details...</p>;
 	if (error) return <p>{error}</p>;
@@ -77,26 +133,97 @@ export const CourseDetails = () => {
 	return (
 		<S.Wrapper>
 			<Card title={course?.title}>
-				{/* Go Back Button */}
 				<Button onClick={() => navigate(-1)} style={{ marginBottom: "16px" }}>
 					Go back to courses
 				</Button>
-				{/* Course description */}
 				<p>{course?.description}</p>
 
-				{/* Questions table */}
 				{course?.questions && course.questions.length > 0 ? (
 					<Table
-						columns={questionColumns}
+						columns={[
+							...questionColumns,
+							{
+								title: "Actions",
+								key: "actions",
+								render: (record: Question) => (
+									<Button onClick={() => handleEditQuestion(record)}>
+										Edit
+									</Button>
+								),
+							},
+						]}
 						dataSource={course.questions}
-						rowKey='_id' // Ensuring each row is uniquely identified by 'id'
-						pagination={false} // Disable pagination, as we want to display all questions
+						rowKey='_id'
+						pagination={false}
 						bordered
 					/>
 				) : (
 					<p>No questions available for this course.</p>
 				)}
 			</Card>
+
+			<Modal
+				title='Edit Question'
+				visible={isModalVisible}
+				onCancel={handleModalClose}
+				onOk={() => form.submit()}
+			>
+				<Form
+					form={form}
+					initialValues={{
+						title: currentQuestion?.title,
+						choices: currentQuestion?.choices || [],
+					}}
+					onFinish={handleSaveQuestion}
+				>
+					<Form.Item
+						label='Question Title'
+						name='title'
+						rules={[
+							{ required: true, message: "Please input the question title!" },
+						]}
+					>
+						<Input />
+					</Form.Item>
+
+					<Form.List
+						name='choices'
+						initialValue={currentQuestion?.choices || []}
+					>
+						{(fields, { add, remove }) => (
+							<>
+								{fields.map(({ key, name, fieldKey, ...restField }) => (
+									<div key={key} style={{ marginBottom: "8px" }}>
+										<Form.Item
+											{...restField}
+											name={[name, "text"]}
+											label='Choice'
+											rules={[
+												{ required: true, message: "Choice text is required!" },
+											]}
+										>
+											<Input />
+										</Form.Item>
+										<Form.Item
+											{...restField}
+											name={[name, "isCorrect"]}
+											valuePropName='checked'
+										>
+											<Checkbox>Correct</Checkbox>
+										</Form.Item>
+										<Button onClick={() => remove(name)} type='link'>
+											Remove choice
+										</Button>
+									</div>
+								))}
+								<Button type='dashed' onClick={() => add()} block>
+									Add Choice
+								</Button>
+							</>
+						)}
+					</Form.List>
+				</Form>
+			</Modal>
 		</S.Wrapper>
 	);
 };

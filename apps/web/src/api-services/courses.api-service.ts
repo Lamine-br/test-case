@@ -17,9 +17,25 @@ export async function fetchCourseQuestions(courseId: string): Promise<Question[]
   return res.json(); 
 }
 
-
 export const searchCourses = async (searchQuery: string): Promise<Course[]> => {
   const response = await fetch(`http://localhost:3000/api/courses?q=${searchQuery}`);
   const data = await response.json();
   return data;
 };
+
+export async function updateQuestion(courseId: string, questionId: string, partialQuestion: Partial<Question>): Promise<Question> {
+  const res = await fetch(`http://localhost:3000/api/courses/${courseId}/questions/${questionId}`, {
+    method: 'PATCH', 
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(partialQuestion),
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to update question');
+  }
+
+  return res.json();
+}
+

@@ -5,7 +5,7 @@ const CourseModel = require("../db/models/course-model");
  * @returns {Promise<Array<Course>>} List of courses
  */
 const getAll = () => {
-	return CourseModel.find({}).select("_id title description");
+	return CourseModel.find({}).select("code title description");
 };
 
 /**
@@ -14,7 +14,7 @@ const getAll = () => {
  * @returns {Promise<Course>} Course
  */
 const getById = (courseId) => {
-	return CourseModel.findById(courseId);
+	return CourseModel.findById(courseId).select("code title description");
 };
 
 /**
@@ -23,7 +23,9 @@ const getById = (courseId) => {
  * @returns {Promise<Course>} Course
  */
 const getByCode = (courseCode) => {
-	return CourseModel.findOne({ code: courseCode });
+	return CourseModel.findOne({ code: courseCode }).select(
+		"name description code"
+	);
 };
 
 /**

@@ -5,7 +5,7 @@ const CourseModel = require("../db/models/course-model");
  * @returns {Promise<Array<Course>>} List of courses
  */
 const getAll = () => {
-  return CourseModel.find({});
+	return CourseModel.find({}).select("_id title description");
 };
 
 /**
@@ -14,7 +14,7 @@ const getAll = () => {
  * @returns {Promise<Course>} Course
  */
 const getById = (courseId) => {
-  return CourseModel.findById(courseId);
+	return CourseModel.findById(courseId);
 };
 
 /**
@@ -23,7 +23,7 @@ const getById = (courseId) => {
  * @returns {Promise<Course>} Course
  */
 const getByCode = (courseCode) => {
-  return CourseModel.findOne({ code: courseCode });
+	return CourseModel.findOne({ code: courseCode });
 };
 
 /**
@@ -32,11 +32,11 @@ const getByCode = (courseCode) => {
  * @returns {Promise<Course>} Created course
  */
 const create = (course) => {
-  const newCourse = new CourseModel({
-    ...course,
-  });
+	const newCourse = new CourseModel({
+		...course,
+	});
 
-  return newCourse.save();
+	return newCourse.save();
 };
 
 /**
@@ -46,17 +46,17 @@ const create = (course) => {
  * @returns {Promise<Course>} Updated course
  */
 const update = async (courseId, partialCourse) => {
-  await CourseModel.findOneAndUpdate(
-    { _id: courseId },
-    {
-      $set: {
-        ...partialCourse,
-      },
-      upsert: true,
-    }
-  );
+	await CourseModel.findOneAndUpdate(
+		{ _id: courseId },
+		{
+			$set: {
+				...partialCourse,
+			},
+			upsert: true,
+		}
+	);
 
-  return CourseModel.findById(courseId);
+	return CourseModel.findById(courseId);
 };
 
 /**
@@ -64,14 +64,14 @@ const update = async (courseId, partialCourse) => {
  * @param {String} courseId Course ID
  */
 const remove = async (courseId) => {
-  await CourseModel.deleteOne({ _id: courseId });
+	await CourseModel.deleteOne({ _id: courseId });
 };
 
 module.exports = {
-  getAll,
-  getById,
-  getByCode,
-  create,
-  update,
-  remove,
+	getAll,
+	getById,
+	getByCode,
+	create,
+	update,
+	remove,
 };

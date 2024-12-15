@@ -1,5 +1,3 @@
 export const CourseDetails = () => {
-  return (
-    <>Course details</>
-  );
+	return <>Course details</>;
 };

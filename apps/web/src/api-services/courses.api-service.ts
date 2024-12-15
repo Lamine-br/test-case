@@ -23,7 +23,7 @@ export const searchCourses = async (searchQuery: string): Promise<Course[]> => {
   return data;
 };
 
-export async function updateQuestion(courseId: string, questionId: string, partialQuestion: Partial<Question>): Promise<Question> {
+export const updateQuestion = async (courseId: string, questionId: string, partialQuestion: Partial<Question>): Promise<Question> => {
   const res = await fetch(`http://localhost:3000/api/courses/${courseId}/questions/${questionId}`, {
     method: 'PATCH', 
     headers: {
@@ -38,4 +38,14 @@ export async function updateQuestion(courseId: string, questionId: string, parti
 
   return res.json();
 }
+
+export const duplicateQuestion = async (courseId: string, questionId: string) => {
+  const response = await fetch(`http://localhost:3000/api/courses/${courseId}/questions/${questionId}/duplicate`, {
+    method: "PUT",
+  });
+  if (!response.ok) {
+    throw new Error("Failed to duplicate the question.");
+  }
+  return response.json();
+};
 

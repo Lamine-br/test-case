@@ -5,6 +5,7 @@ import {
 	fetchCourse,
 	fetchCourseQuestions,
 	updateQuestion,
+	duplicateQuestion,
 } from "../../api-services/courses.api-service";
 import { Card, Table, Button, Modal, Form, Input, Checkbox } from "antd";
 import * as S from "./CourseDetails.styles";
@@ -127,6 +128,28 @@ export const CourseDetails = () => {
 		}
 	};
 
+	const handleDuplicateQuestion = async (question: Question) => {
+		if (!course?._id) return;
+		try {
+			const duplicatedQuestion = await duplicateQuestion(
+				course._id,
+				question._id
+			);
+
+			setCourse((prevCourse) => {
+				if (prevCourse) {
+					return {
+						...prevCourse,
+						questions: [...prevCourse.questions, duplicatedQuestion],
+					};
+				}
+				return prevCourse;
+			});
+		} catch (error) {
+			console.error("Error duplicating question:", error);
+		}
+	};
+
 	if (loading) return <p>Loading course details...</p>;
 	if (error) return <p>{error}</p>;
 
@@ -146,9 +169,17 @@ export const CourseDetails = () => {
 								title: "Actions",
 								key: "actions",
 								render: (record: Question) => (
-									<Button onClick={() => handleEditQuestion(record)}>
-										Edit
-									</Button>
+									<>
+										<Button onClick={() => handleEditQuestion(record)}>
+											Edit
+										</Button>
+										<Button
+											onClick={() => handleDuplicateQuestion(record)}
+											style={{ marginLeft: "8px" }}
+										>
+											Duplicate
+										</Button>
+									</>
 								),
 							},
 						]}

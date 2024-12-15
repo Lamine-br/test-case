@@ -6,7 +6,7 @@ const CourseModel = require("../db/models/course-model");
  * @returns {Promise<Array<Question>>} List of questions
  */
 const getAllByCourse = (courseId) => {
-  return QuestionModel.find({ course: courseId });
+	return QuestionModel.find({ course: courseId });
 };
 
 /**
@@ -15,7 +15,7 @@ const getAllByCourse = (courseId) => {
  * @returns {Promise<Question>} Question
  */
 const getById = (questionId) => {
-  return QuestionModel.findById(questionId);
+	return QuestionModel.findById(questionId);
 };
 
 /**
@@ -24,17 +24,17 @@ const getById = (questionId) => {
  * @returns {Promise<Question>} Created question
  */
 const create = async (courseId, question) => {
-  const newQuestion = new QuestionModel({
-    ...question,
-    course: courseId,
-  });
+	const newQuestion = new QuestionModel({
+		...question,
+		course: courseId,
+	});
 
-  await CourseModel.updateOne(
-    { _id: courseId },
-    { $addToSet: { questions: newQuestion._id } }
-  );
+	await CourseModel.updateOne(
+		{ _id: courseId },
+		{ $addToSet: { questions: newQuestion._id } }
+	);
 
-  return newQuestion.save();
+	return newQuestion.save();
 };
 
 /**
@@ -44,17 +44,17 @@ const create = async (courseId, question) => {
  * @returns {Promise<Question>} Updated question
  */
 const update = async (questionId, partialQuestion) => {
-  await QuestionModel.findOneAndUpdate(
-    { _id: questionId },
-    {
-      $set: {
-        ...partialQuestion,
-      },
-      upsert: true,
-    }
-  );
+	await QuestionModel.findOneAndUpdate(
+		{ _id: questionId },
+		{
+			$set: {
+				...partialQuestion,
+			},
+			upsert: true,
+		}
+	);
 
-  return QuestionModel.findById(questionId);
+	return QuestionModel.findById(questionId);
 };
 
 /**
@@ -63,17 +63,47 @@ const update = async (questionId, partialQuestion) => {
  * @param {String} questionId Question ID
  */
 const remove = async (courseId, questionId) => {
-  await CourseModel.updateOne(
-    { _id: courseId },
-    { $pull: { questions: questionId } }
-  );
-  await QuestionModel.deleteOne({ _id: questionId });
+	await CourseModel.updateOne(
+		{ _id: courseId },
+		{ $pull: { questions: questionId } }
+	);
+	await QuestionModel.deleteOne({ _id: questionId });
+};
+
+/**
+ * Duplicate a question
+ * @param {String} courseId Course ID
+ * @param {String} questionId Question ID
+ * @returns {Promise<Question>} Duplicated question
+ */
+const duplicate = async (courseId, questionId) => {
+	// Fetch the original question
+	const originalQuestion = await QuestionModel.findById(questionId);
+	if (!originalQuestion) {
+		throw new Error("Question not found");
+	}
+
+	// Create a new question object by cloning the original and removing the _id
+	const duplicatedQuestion = new QuestionModel({
+		...originalQuestion.toObject(),
+		_id: undefined, // Let MongoDB generate a new ID
+		course: courseId, // Ensure the course is linked
+	});
+
+	// Save the duplicated question and update the course's questions list
+	await CourseModel.updateOne(
+		{ _id: courseId },
+		{ $addToSet: { questions: duplicatedQuestion._id } }
+	);
+
+	return duplicatedQuestion.save();
 };
 
 module.exports = {
-  getAllByCourse,
-  getById,
-  create,
-  update,
-  remove,
+	getAllByCourse,
+	getById,
+	create,
+	update,
+	remove,
+	duplicate,
 };

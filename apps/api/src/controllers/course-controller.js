@@ -27,11 +27,11 @@ const list = async (req, res, next) => {
 };
 
 /**
- * Get a specific course
+ * Get a specific course // updated to get a course with the Code instead of Id
  */
 const get = async (req, res, next) => {
 	try {
-		const course = await courseService.getById(req.params.courseId);
+		const course = await courseService.getByCode(req.params.courseId);
 
 		res.status(200).json(course);
 	} catch (err) {

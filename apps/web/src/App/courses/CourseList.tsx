@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import {
 	fetchCourses,
 	searchCourses,
-} from "../../api-services/courses.api-service"; // Add searchCourses import
+} from "../../api-services/courses.api-service"; 
 import { Course } from "../../models/course.model";
 import { DataType } from "../../models/data-type.model";
 import * as S from "./CourseList.styles";

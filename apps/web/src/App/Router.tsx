@@ -14,7 +14,7 @@ export const Router = createBrowserRouter(
 		<Route element={<App />} path='/'>
 			<Route element={<CourseList />} path='courses' />
 
-			<Route element={<CourseDetails />} path='courses/:code' />
+			<Route element={<CourseDetails />} path='courses/:courseCode' />
 
 			<Route element={<Navigate replace={true} to='/courses' />} path='/' />
 		</Route>

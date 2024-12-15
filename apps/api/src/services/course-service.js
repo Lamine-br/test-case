@@ -32,7 +32,7 @@ const getById = (courseId) => {
  */
 const getByCode = (courseCode) => {
 	return CourseModel.findOne({ code: courseCode }).select(
-		"name description code"
+		"title description code"
 	);
 };
 

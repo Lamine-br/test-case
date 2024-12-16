@@ -23,6 +23,16 @@ app.use((req, res, next) => {
 	next();
 });
 
+// Middleware to log request details
+app.use((req, res, next) => {
+	console.log("HTTP Method:", req.method);
+	console.log("URL:", req.originalUrl);
+	console.log("Body:", req.body || "No body present");
+	console.log("Query Params:", req.query || "No query parameters");
+	console.log("--------------------");
+	next();
+});
+
 app.use(courseRouter);
 app.use(questionRouter);
 app.use(defaultRouter);

@@ -1,5 +1,7 @@
 # Fullstack intern test case
 
+Lamine Brahami
+
 ## Introduction
 
 The goal of this case is to assess your skills in both frontend (React) and backend (Node.js) development.
